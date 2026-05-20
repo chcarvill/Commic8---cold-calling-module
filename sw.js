@@ -1,14 +1,13 @@
 // Communic8 Service Worker
-var CACHE_NAME = 'communic8-v1';
+var CACHE_NAME = 'communic8-v3';
 var ASSETS = [
   './',
   './index.html',
   './app.css',
   './app.js',
-  './data.json',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', function(e) {
