@@ -14,7 +14,14 @@ var ASSETS = [
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(ASSETS);
+      // Cache each asset individually so a single 404 doesn't abort the whole install
+      return Promise.all(
+        ASSETS.map(function(url) {
+          return cache.add(url).catch(function(err) {
+            console.warn('SW: failed to cache ' + url + ' — skipping.', err);
+          });
+        })
+      );
     })
   );
   self.skipWaiting();
