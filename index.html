@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Communic8 — Cuban-style Cold Calling</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <img src="icons/icon-32.png" alt="Communic8 icon" class="header-icon">
+        <div>
+          <div class="header-title">Communic8</div>
+          <div class="header-sub">Module: Cuban-style cold calling</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-ghost" id="save-btn" onclick="saveData()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save
+        </button>
+        <button class="btn-ghost" onclick="exportData()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+        <span class="save-status" id="save-status"></span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab active" data-tab="prep" onclick="switchTab('prep')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Preparation
+    </button>
+    <button class="tab" data-tab="location" onclick="switchTab('location')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Location
+    </button>
+    <button class="tab" data-tab="setup" onclick="switchTab('setup')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Setup
+    </button>
+    <button class="tab" data-tab="prospects" onclick="switchTab('prospects')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Prospects
+    </button>
+    <button class="tab" data-tab="calls" onclick="switchTab('calls')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.42 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      Cold Calling
+    </button>
+  </nav>
+
+  <main class="main-content">
+
+    <!-- PREP TAB -->
+    <section id="tab-prep" class="tab-panel active">
+      <div class="panel-hint">Click any text to edit it — everything is customisable</div>
+
+      <div class="week-grid" id="week-grid"></div>
+
+      <div class="section-header">
+        <span class="section-title">Pre-call tasks</span>
+        <button class="btn-ghost btn-sm" onclick="addTask('prep')">+ Add task</button>
+      </div>
+      <ul class="task-list" id="prep-task-list"></ul>
+
+      <div class="section-header" style="margin-top:1.5rem">
+        <span class="section-title">Your pitch</span>
+      </div>
+      <textarea class="pitch-area" id="pitch-text" placeholder="Write your pitch here..."></textarea>
+    </section>
+
+    <!-- LOCATION TAB -->
+    <section id="tab-location" class="tab-panel">
+      <div class="panel-hint">Edit any field to match your location and travel plan</div>
+      <div id="location-fields"></div>
+    </section>
+
+    <!-- SETUP TAB -->
+    <section id="tab-setup" class="tab-panel">
+      <div class="panel-hint">Edit items, tick them off before heading out</div>
+      <div class="section-header">
+        <span class="section-title">What to bring</span>
+        <button class="btn-ghost btn-sm" onclick="addTask('setup')">+ Add item</button>
+      </div>
+      <ul class="task-list" id="setup-task-list"></ul>
+      <div class="section-header" style="margin-top:1.5rem">
+        <span class="section-title">Amenities nearby</span>
+        <button class="btn-ghost btn-sm" onclick="addAmenity()">+ Add amenity</button>
+      </div>
+      <div class="amenities-grid" id="amenities-grid"></div>
+    </section>
+
+    <!-- PROSPECTS TAB -->
+    <section id="tab-prospects" class="tab-panel">
+      <div class="panel-hint">Add prospects, mark as washed against ACMA, track status</div>
+      <div class="add-prospect-row">
+        <input type="text" id="p-name" placeholder="Name" class="field-sm">
+        <input type="tel" id="p-number" placeholder="Phone number" class="field-sm">
+        <input type="text" id="p-source" placeholder="Source" class="field-sm">
+        <button class="btn-primary" onclick="addProspect()">+ Add</button>
+      </div>
+      <div class="controls-row">
+        <button class="btn-ghost btn-sm" onclick="markAllWashed()">✓ Mark all washed</button>
+        <button class="btn-ghost btn-sm" onclick="emailList()">✉ Email list to myself</button>
+        <button class="btn-ghost btn-sm" onclick="clearProspects()">↺ Clear all</button>
+      </div>
+      <div id="prospect-empty" class="empty-state">No prospects yet — add your first one above</div>
+      <div class="table-wrap">
+        <table class="data-table" id="prospect-table" style="display:none">
+          <thead><tr><th>#</th><th>Name</th><th>Number</th><th>Source</th><th>Washed</th><th>Status</th><th></th></tr></thead>
+          <tbody id="prospect-body"></tbody>
+        </table>
+      </div>
+      <p class="acma-note" id="acma-note" style="display:none">
+        ⚖ Wash all numbers at <strong>donotcall.gov.au</strong> before calling. You have an ACMA account — use it.
+      </p>
+    </section>
+
+    <!-- CALLS TAB -->
+    <section id="tab-calls" class="tab-panel">
+      <div class="panel-hint">One row per call. Tick boxes in under 10 seconds. Tag outcome. No dwelling — move to the next call immediately.</div>
+
+      <div class="calls-config-row">
+        <label class="config-label">Calls per session:</label>
+        <input type="number" min="5" max="200" id="num-calls-input" class="field-sm" style="width:64px">
+        <button class="btn-ghost btn-sm" onclick="rebuildCalls()">Apply</button>
+      </div>
+
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-lbl">Calls logged</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-spoke">0</div><div class="stat-lbl">Connected</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-ns">0</div><div class="stat-lbl">Next steps</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-rate">0%</div><div class="stat-lbl">Connect rate</div></div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="call-table">
+          <thead>
+            <tr>
+              <th class="left" style="width:28px">#</th>
+              <th class="left" style="width:100px">Name</th>
+              <th style="width:70px">Opened cleanly</th>
+              <th style="width:70px">Pace controlled</th>
+              <th style="width:70px">Tone confident</th>
+              <th style="width:70px">They spoke</th>
+              <th style="width:70px">Next step ask</th>
+              <th style="width:100px">Outcome</th>
+            </tr>
+          </thead>
+          <tbody id="call-body"></tbody>
+        </table>
+      </div>
+
+      <div class="outcome-key">
+        Outcome key: <span class="key-item">VM = Voicemail</span> <span class="key-item">NA = No answer</span> <span class="key-item">Spoke = Connected</span> <span class="key-item">NS = Next step booked</span>
+      </div>
+
+      <div class="section-header" style="margin-top:1.5rem">
+        <span class="section-title">Mid-session check-ins</span>
+        <button class="btn-ghost btn-sm" onclick="addCheckin()">+ Add check-in</button>
+      </div>
+      <p style="font-size:12px;color:#888;margin:0 0 12px">Every 15 calls — honest self-assessment. Takes 30 seconds.</p>
+      <div class="checkin-grid" id="checkin-grid"></div>
+
+      <div class="controls-row" style="margin-top:1rem">
+        <button class="btn-ghost btn-sm" onclick="rebuildCalls()">↺ Reset session</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

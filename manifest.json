@@ -1,0 +1,19 @@
+{
+  "name": "Communic8 — Cuban-style Cold Calling",
+  "short_name": "Communic8",
+  "description": "Module: Cuban-style Cold Calling — a complete cold calling command centre for life coaches",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c8392b",
+  "orientation": "any",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "icons/icon-16.png",  "sizes": "16x16",   "type": "image/png" },
+    { "src": "icons/icon-32.png",  "sizes": "32x32",   "type": "image/png" },
+    { "src": "icons/icon-64.png",  "sizes": "64x64",   "type": "image/png" },
+    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
