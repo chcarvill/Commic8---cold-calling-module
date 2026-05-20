@@ -5,7 +5,7 @@
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#277847",
+  "theme_color": "#c8392b",
   "orientation": "any",
   "categories": ["business", "productivity"],
   "icons": [
