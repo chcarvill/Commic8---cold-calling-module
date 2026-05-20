@@ -1,10 +1,10 @@
-// Communic8 Service Worker
-var CACHE_NAME = 'communic8-v3';
+var CACHE_NAME = 'communic8-v2';
 var ASSETS = [
   './',
   './index.html',
   './app.css',
   './app.js',
+  './data.json',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -13,14 +13,7 @@ var ASSETS = [
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      // Cache each asset individually so a single 404 doesn't abort the whole install
-      return Promise.all(
-        ASSETS.map(function(url) {
-          return cache.add(url).catch(function(err) {
-            console.warn('SW: failed to cache ' + url + ' — skipping.', err);
-          });
-        })
-      );
+      return cache.addAll(ASSETS);
     })
   );
   self.skipWaiting();
