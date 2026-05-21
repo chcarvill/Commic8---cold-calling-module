@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Communic8 — Cuban-style Cold Calling</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-2: #f7f6f3;
+      --bg-3: #f0ede8;
+      --text: #1a1a1a;
+      --text-2: #555550;
+      --text-3: #999990;
+      --border: rgba(0,0,0,0.10);
+      --border-2: rgba(0,0,0,0.18);
+      --accent: #277847;
+      --accent-dark: #1e5e38;
+      --success-bg: #eaf7f0;
+      --success-text: #1a7a4a;
+      --warning-bg: #fef9ec;
+      --warning-text: #8a6500;
+      --info-bg: #e8f2fc;
+      --info-text: #1a4e8a;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1e;
+        --bg-2: #2c2c2e;
+        --bg-3: #3a3a3c;
+        --text: #f0f0ee;
+        --text-2: #aaaaaa;
+        --text-3: #666662;
+        --border: rgba(255,255,255,0.10);
+        --border-2: rgba(255,255,255,0.18);
+        --accent: #3aa864;
+        --accent-dark: #277847;
+        --success-bg: #0d2e1e;
+        --success-text: #4caf80;
+        --warning-bg: #2e2200;
+        --warning-text: #f0b840;
+        --info-bg: #0d1e32;
+        --info-text: #5a9fe0;
+        --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 15px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg-2); color: var(--text); line-height: 1.5; min-height: 100vh; }
+    .app-header { background: var(--bg); border-bottom: 0.5px solid var(--border-2); position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
+    .header-inner { max-width: 960px; margin: 0 auto; padding: 0 20px; height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .header-brand { display: flex; align-items: center; gap: 10px; }
+    .header-icon { width: 28px; height: 28px; border-radius: 6px; }
+    .header-title { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); }
+    .header-sub { font-size: 11px; color: var(--text-3); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+    @media (max-width: 400px) { .header-sub { display: none; } }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .save-status { font-size: 12px; color: var(--success-text); min-width: 60px; transition: opacity 0.3s; }
+    .tab-bar { background: var(--bg); border-bottom: 0.5px solid var(--border); display: flex; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab { display: flex; align-items: center; gap: 6px; padding: 12px 18px; font-size: 13px; font-weight: 500; color: var(--text-3); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; transition: color 0.15s; }
+    .tab:hover { color: var(--text-2); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .main-content { max-width: 960px; margin: 0 auto; padding: 24px 20px 48px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .panel-hint { font-size: 12px; color: var(--text-3); font-style: italic; margin-bottom: 16px; }
+    .week-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .week-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; box-shadow: var(--shadow); }
+    .week-hrs-input { font-size: 26px; font-weight: 600; color: var(--accent); border: none; background: transparent; width: 64px; outline: none; padding: 0; border-bottom: 1.5px dashed var(--border-2); }
+    .week-unit { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+    .week-label-input { font-size: 12px; color: var(--text-2); border: none; background: transparent; width: 100%; outline: none; margin-top: 4px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .section-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .task-list { list-style: none; margin-bottom: 8px; }
+    .task-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 5px; box-shadow: var(--shadow); }
+    .task-item input[type=checkbox] { margin-top: 3px; flex-shrink: 0; cursor: pointer; accent-color: var(--accent); width: 15px; height: 15px; }
+    .task-content { flex: 1; }
+    .task-main-input { font-size: 13px; color: var(--text); border: none; background: transparent; width: 100%; outline: none; padding: 0; line-height: 1.5; }
+    .task-main-input.done { text-decoration: line-through; color: var(--text-3); }
+    .task-sub-input { font-size: 12px; color: var(--text-3); border: none; background: transparent; width: 100%; outline: none; padding: 0; margin-top: 2px; }
+    .task-del { background: transparent; border: none; color: var(--text-3); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px; flex-shrink: 0; }
+    .task-del:hover { color: var(--accent); }
+    .pitch-area { width: 100%; min-height: 100px; font-size: 13px; line-height: 1.75; color: var(--text); background: var(--bg-2); border: 0.5px solid var(--border-2); border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; resize: vertical; outline: none; font-family: inherit; }
+    .pitch-area:focus { border-color: var(--accent); }
+    .location-field { margin-bottom: 14px; }
+    .field-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+    .field-input { width: 100%; font-size: 13px; padding: 8px 11px; background: var(--bg); border: 0.5px solid var(--border-2); border-radius: var(--radius); color: var(--text); outline: none; font-family: inherit; resize: vertical; }
+    .field-input:focus { border-color: var(--accent); outline: 1px solid var(--accent); }
+    .field-divider { border: none; border-top: 0.5px solid var(--border); margin: 20px 0; }
+    .amenities-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .amenity-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 10px 12px; position: relative; box-shadow: var(--shadow); }
+    .amenity-label-input { display: block; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; border: none; background: transparent; width: calc(100% - 22px); outline: none; margin-bottom: 4px; }
+    .amenity-val-input { font-size: 13px; color: var(--text); border: none; background: transparent; width: 100%; outline: none; line-height: 1.5; }
+    .amenity-del { position: absolute; top: 8px; right: 8px; background: transparent; border: none; color: var(--text-3); cursor: pointer; font-size: 14px; line-height: 1; }
+    .amenity-del:hover { color: var(--accent); }
+    .add-prospect-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+    .field-sm { font-size: 13px; padding: 7px 10px; background: var(--bg); border: 0.5px solid var(--border-2); border-radius: var(--radius); color: var(--text); outline: none; font-family: inherit; }
+    .field-sm:focus { border-color: var(--accent); }
+    .controls-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .empty-state { text-align: center; padding: 2.5rem; color: var(--text-3); font-size: 13px; background: var(--bg); border: 0.5px dashed var(--border-2); border-radius: var(--radius-lg); }
+    .table-wrap { overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--bg); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
+    .data-table th { text-align: left; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 10px; border-bottom: 0.5px solid var(--border); background: var(--bg-2); }
+    .data-table td { padding: 8px 10px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--bg-2); }
+    .data-table input[type=text], .data-table input[type=tel] { border: none; background: transparent; color: var(--text); font-size: 13px; outline: none; width: 100%; }
+    .badge { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+    .badge-pending { background: var(--warning-bg); color: var(--warning-text); }
+    .badge-washed { background: var(--success-bg); color: var(--success-text); }
+    .outcome-sel { font-size: 12px; padding: 3px 6px; border-radius: 5px; border: 0.5px solid var(--border); background: var(--bg-2); color: var(--text); cursor: pointer; }
+    .acma-note { margin-top: 12px; font-size: 12px; line-height: 1.6; padding: 10px 14px; background: var(--info-bg); color: var(--info-text); border-radius: var(--radius); }
+    .calls-config-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .config-label { font-size: 13px; color: var(--text-2); }
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .stat-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 14px; text-align: center; box-shadow: var(--shadow); }
+    .stat-num { font-size: 22px; font-weight: 600; color: var(--accent); }
+    .stat-lbl { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+    .call-table { width: 100%; border-collapse: collapse; font-size: 12px; background: var(--bg); box-shadow: var(--shadow); }
+    .call-table th { font-size: 10px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 6px; border-bottom: 0.5px solid var(--border); text-align: center; background: var(--bg-2); white-space: nowrap; }
+    .call-table th.left { text-align: left; }
+    .call-table td { padding: 5px 6px; border-bottom: 0.5px solid var(--border); text-align: center; vertical-align: middle; }
+    .call-table td.left { text-align: left; }
+    .call-table tr:hover td { background: var(--bg-2); }
+    .call-table input[type=checkbox] { cursor: pointer; accent-color: var(--accent); width: 14px; height: 14px; }
+    .call-name-input { font-size: 11px; padding: 3px 6px; border-radius: 4px; border: 0.5px solid var(--border); background: transparent; color: var(--text); outline: none; width: 88px; }
+    .call-name-input:focus { border-color: var(--accent); }
+    .call-outcome-sel { font-size: 11px; padding: 2px 5px; border-radius: 4px; border: 0.5px solid var(--border); background: var(--bg-2); color: var(--text); cursor: pointer; }
+    .outcome-key { margin-top: 10px; font-size: 11px; color: var(--text-3); }
+    .key-item { display: inline-block; margin-right: 12px; }
+    .checkin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    .checkin-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; position: relative; box-shadow: var(--shadow); }
+    .checkin-title-input { display: block; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; border: none; background: transparent; width: calc(100% - 20px); outline: none; margin-bottom: 10px; }
+    .checkin-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 6px; }
+    .checkin-row-label { font-size: 12px; color: var(--text-2); min-width: 44px; }
+    .checkin-opts { display: flex; gap: 4px; }
+    .ci-btn { font-size: 11px; padding: 3px 8px; border-radius: 20px; border: 0.5px solid var(--border-2); background: transparent; color: var(--text-2); cursor: pointer; transition: all 0.12s; }
+    .ci-btn:hover { background: var(--bg-2); }
+    .ci-btn.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .checkin-del { position: absolute; top: 8px; right: 8px; background: transparent; border: none; color: var(--text-3); cursor: pointer; font-size: 14px; line-height: 1; }
+    .checkin-del:hover { color: var(--accent); }
+    .btn-primary { background: var(--accent); color: #fff; border: none; border-radius: var(--radius); padding: 7px 16px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-ghost { background: transparent; border: 0.5px solid var(--border-2); border-radius: var(--radius); padding: 7px 13px; font-size: 13px; color: var(--text); cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 5px; transition: background 0.12s; }
+    .btn-ghost:hover { background: var(--bg-3); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .section-divider { border: none; border-top: 0.5px solid var(--border); margin: 20px 0; }
+    @media (max-width: 640px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .week-grid { grid-template-columns: 1fr; }
+      .amenities-grid { grid-template-columns: 1fr; }
+      .header-inner { padding: 0 14px; }
+      .main-content { padding: 16px 14px 40px; }
+      .tab { padding: 10px 12px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <img src="icon-192.png" alt="Communic8 icon" class="header-icon">
+        <div>
+          <div class="header-title">Communic8</div>
+          <div class="header-sub">Module: Cuban-style cold calling</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-ghost" id="save-btn" onclick="saveData()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save
+        </button>
+        <button class="btn-ghost" onclick="exportData()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+        <span class="save-status" id="save-status"></span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab active" data-tab="prep" onclick="switchTab('prep')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Preparation
+    </button>
+    <button class="tab" data-tab="location" onclick="switchTab('location')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Location
+    </button>
+    <button class="tab" data-tab="setup" onclick="switchTab('setup')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Setup
+    </button>
+    <button class="tab" data-tab="prospects" onclick="switchTab('prospects')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Prospects
+    </button>
+    <button class="tab" data-tab="calls" onclick="switchTab('calls')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.42 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      Cold Calling
+    </button>
+  </nav>
+
+  <main class="main-content">
+
+    <section id="tab-prep" class="tab-panel active">
+      <div class="panel-hint">Click any text to edit it — everything is customisable</div>
+      <div class="week-grid" id="week-grid"></div>
+      <div class="section-header">
+        <span class="section-title">Pre-call tasks</span>
+        <button class="btn-ghost btn-sm" onclick="addTask('prep')">+ Add task</button>
+      </div>
+      <ul class="task-list" id="prep-task-list"></ul>
+      <div class="section-header" style="margin-top:1.5rem">
+        <span class="section-title">Your pitch</span>
+      </div>
+      <textarea class="pitch-area" id="pitch-text" placeholder="Write your pitch here..."></textarea>
+    </section>
+
+    <section id="tab-location" class="tab-panel">
+      <div class="panel-hint">Edit any field to match your location and travel plan</div>
+      <div id="location-fields"></div>
+    </section>
+
+    <section id="tab-setup" class="tab-panel">
+      <div class="panel-hint">Edit items, tick them off before heading out</div>
+      <div class="section-header">
+        <span class="section-title">What to bring</span>
+        <button class="btn-ghost btn-sm" onclick="addTask('setup')">+ Add item</button>
+      </div>
+      <ul class="task-list" id="setup-task-list"></ul>
+      <div class="section-header" style="margin-top:1.5rem">
+        <span class="section-title">Amenities nearby</span>
+        <button class="btn-ghost btn-sm" onclick="addAmenity()">+ Add amenity</button>
+      </div>
+      <div class="amenities-grid" id="amenities-grid"></div>
+    </section>
+
+    <section id="tab-prospects" class="tab-panel">
+      <div class="panel-hint">Add prospects, mark as washed against ACMA, track status</div>
+      <div class="add-prospect-row">
+        <input type="text" id="p-name" placeholder="Name" class="field-sm">
+        <input type="tel" id="p-number" placeholder="Phone number" class="field-sm">
+        <input type="text" id="p-source" placeholder="Source" class="field-sm">
+        <button class="btn-primary" onclick="addProspect()">+ Add</button>
+      </div>
+      <div class="controls-row">
+        <button class="btn-ghost btn-sm" onclick="markAllWashed()">✓ Mark all washed</button>
+        <button class="btn-ghost btn-sm" onclick="emailList()">✉ Email list to myself</button>
+        <button class="btn-ghost btn-sm" onclick="clearProspects()">↺ Clear all</button>
+      </div>
+      <div id="prospect-empty" class="empty-state">No prospects yet — add your first one above</div>
+      <div class="table-wrap">
+        <table class="data-table" id="prospect-table" style="display:none">
+          <thead><tr><th>#</th><th>Name</th><th>Number</th><th>Source</th><th>Washed</th><th>Status</th><th></th></tr></thead>
+          <tbody id="prospect-body"></tbody>
+        </table>
+      </div>
+      <p class="acma-note" id="acma-note" style="display:none">
+        ⚖ Wash all numbers at <strong>donotcall.gov.au</strong> before calling. You have an ACMA account — use it.
+      </p>
+    </section>
+
+    <section id="tab-calls" class="tab-panel">
+      <div class="panel-hint">One row per call. Tick boxes in under 10 seconds. Tag outcome. No dwelling — move to the next call immediately.</div>
+      <div class="calls-config-row">
+        <label class="config-label">Calls per session:</label>
+        <input type="number" min="5" max="200" id="num-calls-input" class="field-sm" style="width:64px">
+        <button class="btn-ghost btn-sm" onclick="rebuildCalls()">Apply</button>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-lbl">Calls logged</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-spoke">0</div><div class="stat-lbl">Connected</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-ns">0</div><div class="stat-lbl">Next steps</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-rate">0%</div><div class="stat-lbl">Connect rate</div></div>
+      </div>
+      <div class="table-wrap">
+        <table class="call-table">
+          <thead>
+            <tr>
+              <th class="left" style="width:28px">#</th>
+              <th class="left" style="width:100px">Name</th>
+              <th style="width:70px">Opened cleanly</th>
+              <th style="width:70px">Pace controlled</th>
+              <th style="width:70px">Tone confident</th>
+              <th style="width:70px">They spoke</th>
+              <th style="width:70px">Next step ask</th>
+              <th style="width:100px">Outcome</th>
+            </tr>
+          </thead>
+          <tbody id="call-body"></tbody>
+        </table>
+      </div>
+      <div class="outcome-key">
+        Outcome key: <span class="key-item">VM = Voicemail</span> <span class="key-item">NA = No answer</span> <span class="key-item">Spoke = Connected</span> <span class="key-item">NS = Next step booked</span>
+      </div>
+      <div class="section-header" style="margin-top:1.5rem">
+        <span class="section-title">Mid-session check-ins</span>
+        <button class="btn-ghost btn-sm" onclick="addCheckin()">+ Add check-in</button>
+      </div>
+      <p style="font-size:12px;color:#888;margin:0 0 12px">Every 15 calls — honest self-assessment. Takes 30 seconds.</p>
+      <div class="checkin-grid" id="checkin-grid"></div>
+      <div class="controls-row" style="margin-top:1rem">
+        <button class="btn-ghost btn-sm" onclick="rebuildCalls()">↺ Reset session</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    'use strict';
+
+    var state = {};
+    var calls = [];
+    var STORAGE_KEY = 'communic8_data';
+
+    function getDefaults() {
+      return {
+        pitch: '"Hi, my name is Chris — I work with people who feel stuck or unfulfilled despite doing all the right things. I offer a free, no-obligation coaching session over Zoom — no credit card, no strings attached. Would that be of any interest to you?"',
+        weekCards: [
+          { hours: 5, label: 'Cold calling' },
+          { hours: 2, label: 'Planning sessions' },
+          { hours: 3, label: 'Working on business' }
+        ],
+        prepTasks: [
+          { label: 'Review and refresh your prospect list', sub: 'Ensure all numbers have been washed against the ACMA Do Not Call Register', done: false },
+          { label: 'Rehearse your opening pitch out loud', sub: 'Say it naturally — not recited. Adjust tone until it feels genuine', done: false },
+          { label: 'Set your daily call target', sub: 'Aim for 20 calls per session. Write the number down before you start', done: false },
+          { label: 'Charge your phone', sub: 'Full battery before you leave. Bring a portable charger as backup', done: false },
+          { label: 'Download prospect list offline', sub: 'Export your list so it is accessible without relying on mobile data', done: false },
+          { label: 'Clear your mind before starting', sub: 'Five minutes of stillness before call one. The mountains help with this', done: false }
+        ],
+        setupTasks: [
+          { label: 'Phone — fully charged', sub: 'Your primary calling device', done: false },
+          { label: 'Portable charger', sub: '5-hour sessions drain the battery — do not risk it', done: false },
+          { label: 'Notebook and pen', sub: 'For jotting notes mid-call when you cannot type fast enough', done: false },
+          { label: 'Water', sub: 'Voice work is dehydrating — bring a full bottle', done: false },
+          { label: 'Snack', sub: 'For the mid-session check-in break', done: false },
+          { label: 'Earphones', sub: 'Hands-free makes note-taking easier and sounds more natural', done: false },
+          { label: 'Jacket / weather layer', sub: 'Belgrave can be cool — comfort affects your voice', done: false }
+        ],
+        locationFields: [
+          { id: 'loc-primary', label: 'Primary location', type: 'input', value: 'Belgrave — quiet area near the Dandenong Ranges' },
+          { id: 'loc-setting', label: 'Setting description', type: 'input', value: 'Park near the mountains — outdoors, low foot traffic, good mobile signal' },
+          { id: 'loc-why', label: 'Why this location works', type: 'input', value: 'Natural, calm, away from the city — suits the mindset for this work' },
+          { divider: true },
+          { id: 'loc-travel-header', type: 'header', value: 'Getting there' },
+          { id: 'loc-train', label: 'By train', type: 'textarea', value: 'Belgrave line from Flinders Street — terminus is Belgrave Station. Walk or short taxi to the park.' },
+          { id: 'loc-car', label: 'By car', type: 'textarea', value: 'Monash Freeway east, exit at Belgrave. Parking available near the park area.' },
+          { id: 'loc-notes', label: 'Travel notes', type: 'textarea', value: 'Check mobile coverage before committing (Telstra tends to be strongest in the ranges). Arrive 10 min early to settle before the first call.' },
+          { id: 'loc-backup', label: 'Backup location', type: 'input', value: '' }
+        ],
+        amenities: [
+          { label: 'Cafes', value: "Several cafes on Belgrave's main strip — good for a pre-session coffee" },
+          { label: 'Toilets', value: 'Public amenities near Belgrave Station' },
+          { label: 'Shops', value: 'Small supermarket for any last-minute supplies' },
+          { label: 'Shelter', value: 'Covered picnic areas in the park if weather turns' }
+        ],
+        prospects: [],
+        numCalls: 20,
+        checkins: [
+          { title: 'After call 15' },
+          { title: 'After call 30' },
+          { title: 'After call 45' }
+        ]
+      };
+    }
+
+    function saveData() {
+      syncStateFromDOM();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      var s = document.getElementById('save-status');
+      s.textContent = '✓ Saved';
+      setTimeout(function(){ s.textContent = ''; }, 2000);
+    }
+
+    function syncStateFromDOM() {
+      var p = document.getElementById('pitch-text');
+      if (p) state.pitch = p.value;
+      document.querySelectorAll('.week-card').forEach(function(card, i) {
+        if (!state.weekCards[i]) return;
+        var h = card.querySelector('.week-hrs-input');
+        var l = card.querySelector('.week-label-input');
+        if (h) state.weekCards[i].hours = parseInt(h.value) || 0;
+        if (l) state.weekCards[i].label = l.value;
+      });
+      state.locationFields.forEach(function(f) {
+        if (!f.id || f.type === 'header') return;
+        var el = document.getElementById(f.id);
+        if (el) f.value = el.value;
+      });
+    }
+
+    function exportData() {
+      syncStateFromDOM();
+      var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'communic8-data.json'; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function switchTab(t) {
+      document.querySelectorAll('.tab').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === t); });
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.toggle('active', p.id === 'tab-' + t); });
+    }
+
+    function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function initAll() {
+      renderWeekCards();
+      renderTasks('prep-task-list', state.prepTasks, 'prep');
+      renderTasks('setup-task-list', state.setupTasks, 'setup');
+      var pt = document.getElementById('pitch-text');
+      if (pt) pt.value = state.pitch || '';
+      renderLocationFields();
+      renderAmenities();
+      renderProspects();
+      var nci = document.getElementById('num-calls-input');
+      if (nci) nci.value = state.numCalls || 20;
+      buildCalls();
+      renderCheckins();
+    }
+
+    function renderWeekCards() {
+      var g = document.getElementById('week-grid');
+      if (!g) return;
+      g.innerHTML = '';
+      (state.weekCards || []).forEach(function(c, i) {
+        var d = document.createElement('div');
+        d.className = 'week-card';
+        d.innerHTML = '<input class="week-hrs-input" type="number" min="0" max="100" value="' + esc(String(c.hours)) + '" oninput="state.weekCards[' + i + '].hours=parseInt(this.value)||0">' +
+          '<div class="week-unit">hrs / week</div>' +
+          '<input class="week-label-input" type="text" value="' + esc(c.label) + '" oninput="state.weekCards[' + i + '].label=this.value">';
+        g.appendChild(d);
+      });
+    }
+
+    function renderTasks(listId, tasks, key) {
+      var ul = document.getElementById(listId);
+      if (!ul) return;
+      ul.innerHTML = '';
+      tasks.forEach(function(t, i) {
+        var li = document.createElement('li');
+        li.className = 'task-item';
+        li.innerHTML = '<input type="checkbox"' + (t.done ? ' checked' : '') + ' onchange="toggleTask(\'' + key + '\',' + i + ',this.checked)">' +
+          '<div class="task-content">' +
+          '<input class="task-main-input' + (t.done ? ' done' : '') + '" type="text" value="' + esc(t.label) + '" oninput="editTask(\'' + key + '\',' + i + ',\'label\',this.value)">' +
+          '<input class="task-sub-input" type="text" value="' + esc(t.sub) + '" placeholder="Add a note..." oninput="editTask(\'' + key + '\',' + i + ',\'sub\',this.value)">' +
+          '</div>' +
+          '<button class="task-del" onclick="removeTask(\'' + key + '\',' + i + ')" aria-label="Remove">✕</button>';
+        ul.appendChild(li);
+      });
+    }
+
+    function toggleTask(key, i, checked) {
+      var arr = key === 'prep' ? state.prepTasks : state.setupTasks;
+      arr[i].done = checked;
+      renderTasks(key === 'prep' ? 'prep-task-list' : 'setup-task-list', arr, key);
+    }
+    function editTask(key, i, field, val) { var arr = key === 'prep' ? state.prepTasks : state.setupTasks; arr[i][field] = val; }
+    function removeTask(key, i) { var arr = key === 'prep' ? state.prepTasks : state.setupTasks; arr.splice(i, 1); renderTasks(key === 'prep' ? 'prep-task-list' : 'setup-task-list', arr, key); }
+    function addTask(key) { var arr = key === 'prep' ? state.prepTasks : state.setupTasks; arr.push({ label: 'New task', sub: '', done: false }); renderTasks(key === 'prep' ? 'prep-task-list' : 'setup-task-list', arr, key); }
+
+    function renderLocationFields() {
+      var c = document.getElementById('location-fields');
+      if (!c) return;
+      c.innerHTML = '';
+      (state.locationFields || []).forEach(function(f) {
+        if (f.divider) { var hr = document.createElement('hr'); hr.className = 'field-divider'; c.appendChild(hr); return; }
+        if (f.type === 'header') { var h = document.createElement('div'); h.style.cssText = 'font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px;margin-top:4px'; h.textContent = f.value; c.appendChild(h); return; }
+        var wrap = document.createElement('div'); wrap.className = 'location-field';
+        var lbl = document.createElement('label'); lbl.className = 'field-label'; lbl.textContent = f.label || ''; wrap.appendChild(lbl);
+        var el = f.type === 'textarea' ? document.createElement('textarea') : document.createElement('input');
+        if (f.type === 'textarea') el.rows = 2; else el.type = 'text';
+        el.className = 'field-input'; el.id = f.id; el.value = f.value || '';
+        el.addEventListener('input', function() { f.value = el.value; });
+        wrap.appendChild(el); c.appendChild(wrap);
+      });
+    }
+
+    function renderAmenities() {
+      var g = document.getElementById('amenities-grid');
+      if (!g) return;
+      g.innerHTML = '';
+      (state.amenities || []).forEach(function(a, i) {
+        var d = document.createElement('div'); d.className = 'amenity-card';
+        d.innerHTML = '<input class="amenity-label-input" type="text" value="' + esc(a.label) + '" oninput="state.amenities[' + i + '].label=this.value">' +
+          '<input class="amenity-val-input" type="text" value="' + esc(a.value) + '" placeholder="Description..." oninput="state.amenities[' + i + '].value=this.value">' +
+          '<button class="amenity-del" onclick="removeAmenity(' + i + ')" aria-label="Remove amenity">✕</button>';
+        g.appendChild(d);
+      });
+    }
+    function addAmenity() { state.amenities.push({ label: 'New amenity', value: '' }); renderAmenities(); }
+    function removeAmenity(i) { state.amenities.splice(i, 1); renderAmenities(); }
+
+    function addProspect() {
+      var n = document.getElementById('p-name').value.trim();
+      var num = document.getElementById('p-number').value.trim();
+      var src = document.getElementById('p-source').value.trim();
+      if (!n || !num) return;
+      if (!state.prospects) state.prospects = [];
+      state.prospects.push({ name: n, number: num, source: src || '—', washed: false, status: 'pending' });
+      document.getElementById('p-name').value = '';
+      document.getElementById('p-number').value = '';
+      document.getElementById('p-source').value = '';
+      renderProspects();
+    }
+
+    function renderProspects() {
+      var empty = document.getElementById('prospect-empty');
+      var table = document.getElementById('prospect-table');
+      var note = document.getElementById('acma-note');
+      var ps = state.prospects || [];
+      if (ps.length === 0) { empty.style.display = 'block'; table.style.display = 'none'; note.style.display = 'none'; return; }
+      empty.style.display = 'none'; table.style.display = 'table'; note.style.display = 'block';
+      document.getElementById('prospect-body').innerHTML = ps.map(function(p, i) {
+        var wb = p.washed ? '<span class="badge badge-washed" onclick="toggleWash(' + i + ')" title="Click to toggle">Washed</span>' : '<span class="badge badge-pending" onclick="toggleWash(' + i + ')" title="Click to toggle">Unwashed</span>';
+        return '<tr><td style="color:var(--text-3);font-size:12px">' + (i+1) + '</td>' +
+          '<td><input type="text" value="' + esc(p.name) + '" oninput="state.prospects[' + i + '].name=this.value"></td>' +
+          '<td><input type="tel" value="' + esc(p.number) + '" oninput="state.prospects[' + i + '].number=this.value"></td>' +
+          '<td><input type="text" value="' + esc(p.source) + '" oninput="state.prospects[' + i + '].source=this.value"></td>' +
+          '<td>' + wb + '</td>' +
+          '<td><select class="outcome-sel" onchange="state.prospects[' + i + '].status=this.value;renderProspects()">' +
+          '<option value="pending"' + (p.status==='pending'?' selected':'') + '>Pending</option>' +
+          '<option value="called"' + (p.status==='called'?' selected':'') + '>Called</option>' +
+          '<option value="booked"' + (p.status==='booked'?' selected':'') + '>Booked</option>' +
+          '</select></td>' +
+          '<td><button class="task-del" onclick="removeProspect(' + i + ')" aria-label="Remove">✕</button></td></tr>';
+      }).join('');
+    }
+    function toggleWash(i) { state.prospects[i].washed = !state.prospects[i].washed; renderProspects(); }
+    function removeProspect(i) { state.prospects.splice(i, 1); renderProspects(); }
+    function markAllWashed() { (state.prospects || []).forEach(function(p) { p.washed = true; }); renderProspects(); }
+    function clearProspects() { if (confirm('Clear all prospects? This cannot be undone.')) { state.prospects = []; renderProspects(); } }
+    function emailList() {
+      var ps = state.prospects || [];
+      if (ps.length === 0) { alert('No prospects yet.'); return; }
+      var body = 'Prospect list — ' + new Date().toLocaleDateString('en-AU') + '\n\n';
+      body += ps.map(function(p, i) { return (i+1) + '. ' + p.name + ' | ' + p.number + ' | ' + p.source + ' | Washed: ' + (p.washed?'Yes':'No') + ' | ' + p.status; }).join('\n');
+      window.open('mailto:?subject=Prospect list ' + new Date().toLocaleDateString('en-AU') + '&body=' + encodeURIComponent(body));
+    }
+
+    function buildCalls() {
+      var n = parseInt((document.getElementById('num-calls-input') || {}).value) || state.numCalls || 20;
+      state.numCalls = n; calls = [];
+      var tbody = document.getElementById('call-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      for (var i = 0; i < n; i++) {
+        calls.push({ name: '', opened: false, pace: false, tone: false, spoke: false, nextstep: false, outcome: '—' });
+        var tr = document.createElement('tr');
+        var idx = i;
+        tr.innerHTML = '<td class="left" style="color:var(--text-3);font-size:11px">' + (i+1) + '</td>' +
+          '<td class="left"><input class="call-name-input" type="text" placeholder="Name" oninput="calls[' + idx + '].name=this.value"></td>' +
+          '<td><input type="checkbox" onchange="updateCall(' + idx + ',\'opened\',this.checked)"></td>' +
+          '<td><input type="checkbox" onchange="updateCall(' + idx + ',\'pace\',this.checked)"></td>' +
+          '<td><input type="checkbox" onchange="updateCall(' + idx + ',\'tone\',this.checked)"></td>' +
+          '<td><input type="checkbox" onchange="updateCall(' + idx + ',\'spoke\',this.checked)"></td>' +
+          '<td><input type="checkbox" onchange="updateCall(' + idx + ',\'nextstep\',this.checked)"></td>' +
+          '<td><select class="call-outcome-sel" onchange="updateCallOutcome(' + idx + ',this.value)"><option>—</option><option>VM</option><option>NA</option><option>Spoke</option><option>NS</option></select></td>';
+        tbody.appendChild(tr);
+      }
+      updateStats();
+    }
+    function rebuildCalls() { var v = parseInt(document.getElementById('num-calls-input').value) || 20; state.numCalls = v; buildCalls(); renderCheckins(); }
+    function updateCall(i, f, v) { if (calls[i]) { calls[i][f] = v; } updateStats(); }
+    function updateCallOutcome(i, v) { if (calls[i]) { calls[i].outcome = v; } updateStats(); }
+    function updateStats() {
+      var logged = calls.filter(function(c){ return c.outcome !== '—'; }).length;
+      var spoke = calls.filter(function(c){ return c.outcome === 'Spoke' || c.outcome === 'NS'; }).length;
+      var ns = calls.filter(function(c){ return c.outcome === 'NS'; }).length;
+      var rate = logged > 0 ? Math.round(spoke/logged*100) : 0;
+      document.getElementById('stat-total').textContent = logged;
+      document.getElementById('stat-spoke').textContent = spoke;
+      document.getElementById('stat-ns').textContent = ns;
+      document.getElementById('stat-rate').textContent = rate + '%';
+    }
+
+    function renderCheckins() {
+      var g = document.getElementById('checkin-grid');
+      if (!g) return;
+      g.innerHTML = '';
+      (state.checkins || []).forEach(function(c, ci) {
+        var d = document.createElement('div'); d.className = 'checkin-card';
+        d.innerHTML = '<input class="checkin-title-input" type="text" value="' + esc(c.title) + '" oninput="state.checkins[' + ci + '].title=this.value">' +
+          '<div class="checkin-row"><span class="checkin-row-label">Energy</span><div class="checkin-opts"><button class="ci-btn" onclick="selCI(this)">Low</button><button class="ci-btn" onclick="selCI(this)">OK</button><button class="ci-btn" onclick="selCI(this)">Good</button></div></div>' +
+          '<div class="checkin-row"><span class="checkin-row-label">Voice</span><div class="checkin-opts"><button class="ci-btn" onclick="selCI(this)">Tight</button><button class="ci-btn" onclick="selCI(this)">OK</button><button class="ci-btn" onclick="selCI(this)">Flowing</button></div></div>' +
+          '<div class="checkin-row"><span class="checkin-row-label">Action</span><div class="checkin-opts"><button class="ci-btn" onclick="selCI(this)">Keep going</button><button class="ci-btn" onclick="selCI(this)">Take 5</button></div></div>' +
+          '<button class="checkin-del" onclick="removeCheckin(' + ci + ')" aria-label="Remove check-in">✕</button>';
+        g.appendChild(d);
+      });
+    }
+    function selCI(btn) { btn.parentElement.querySelectorAll('.ci-btn').forEach(function(b){ b.classList.remove('sel'); }); btn.classList.add('sel'); }
+    function addCheckin() { state.checkins.push({ title: 'After call ' + ((state.checkins.length + 1) * 15) }); renderCheckins(); }
+    function removeCheckin(i) { state.checkins.splice(i, 1); renderCheckins(); }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) { try { state = JSON.parse(saved); initAll(); return; } catch(e) {} }
+      state = getDefaults();
+      initAll();
+    });
+
+    window.addEventListener('beforeunload', function() {
+      syncStateFromDOM();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js');
+      });
+    }
+  </script>
+</body>
+</html>
